@@ -2,3 +2,10 @@ streamlit
 plotly
 pandas
 numpy
+pyhton
+subprocess
+datetime
+requests
+csv
+auth
+dotenv
