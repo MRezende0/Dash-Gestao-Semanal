@@ -1,8 +1,8 @@
 streamlit
-plotly
+plotly==5.24.1
 pandas
 numpy
-pyhton
+python
 subprocess
 datetime
 csv
