@@ -48,6 +48,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+#################################################  DIVISÃO DAS ABAS #################################################
+
+
+
+
+
 
 ################################################# FILTROS #################################################
 
@@ -238,6 +244,95 @@ st.markdown(
 
 # Título centralizado
 st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
+
+################################################# BOTÕES DAS ABAS #################################################
+
+# CSS para estilizar os botões
+st.markdown(
+    """
+    <style>
+    .info-box-btn {
+        background-color: rgba(42, 157, 244, 0.7);
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin: 5px;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+    }
+    .info-box-btn:hover {
+        background-color: rgba(42, 157, 244, 1);
+        transform: scale(1.05);
+    }
+    .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+# Inicializa o estado para a aba ativa
+if "current_tab" not in st.session_state:
+    st.session_state.current_tab = "Atividade Semanal"
+
+# Função para trocar de aba
+def switch_tab(tab_name):
+    st.session_state.current_tab = tab_name
+
+# Layout para os botões
+col1, col2, col3 = st.columns([1, 2, 1])  # Usando colunas com largura ajustada para centralizar
+
+with col1:
+    st.empty()  # Mantém espaço vazio na primeira coluna
+
+with col2:
+    # Sub-colunas dentro da coluna central
+    btn_col1, btn_col2, btn_col3 = st.columns(3)  # 3 colunas para os botões
+
+    with btn_col1:
+        if st.button("Gestão Semanal", key="Gestao"):
+            switch_tab("Gestão Semanal")
+    with btn_col2:
+        if st.button("Atividade Extra", key="Atividade"):
+            switch_tab("Atividade Extra")
+    with btn_col3:
+        if st.button("Auditoria", key="Auditoria"):
+            switch_tab("Auditoria")
+
+with col3:
+    st.empty()  # Mantém espaço vazio na última coluna
+
+# Filtros dinâmicos na sidebar
+st.sidebar.markdown("---")
+if st.session_state.current_tab == "Atividade Semanal":
+    st.sidebar.subheader("Filtros - Atividade Semanal")
+    setor = st.sidebar.selectbox("Setor", ["Todos", "Setor A", "Setor B"])
+    unidade = st.sidebar.selectbox("Unidade", ["Todas", "Unidade 1", "Unidade 2"])
+elif st.session_state.current_tab == "Atividade Extra":
+    st.sidebar.subheader("Filtros - Atividade Extra")
+    tipo_atividade = st.sidebar.multiselect("Tipo de Atividade", ["Mapeamento", "Drone", "Análise"])
+elif st.session_state.current_tab == "Auditoria":
+    st.sidebar.subheader("Filtros - Auditoria")
+    projeto = st.sidebar.text_input("Projeto")
+    porcentagem = st.sidebar.slider("Porcentagem de Adesão", 0, 100, 50)
+
+# # Conteúdo principal baseado na aba ativa
+# st.title(f"Dashboard: {st.session_state.current_tab}")
+
+if st.session_state.current_tab == "Atividade Semanal":
+    print("auditoria")
+    # Adicione os gráficos e informações específicas dessa seção aqui.
+elif st.session_state.current_tab == "Atividade Extra":
+    print("auditoria")
+    # Adicione os gráficos e informações específicas dessa seção aqui.
+elif st.session_state.current_tab == "Auditoria":
+    print("auditoria")
+    # Adicione os gráficos e informações específicas dessa seção aqui.
 
 ################################################# CABEÇALHO #################################################
 
