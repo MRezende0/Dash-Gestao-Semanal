@@ -1,7 +1,7 @@
 import requests
 import csv
 from datetime import datetime, timedelta, timezone
-from auth import obter_token  # Importa a função de autenticação
+from scripts.auth import obter_token  # Importa a função de autenticação
 
 # Configurar a URL da API para coletar as tarefas
 url = "https://graph.microsoft.com/v1.0/planner/plans/MVnlyNS2W0SrUQxwXUPKuWUABICf/tasks"
