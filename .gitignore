@@ -1,1 +1,2 @@
-auth.py
+scripts/auth.py
+__pycache__/

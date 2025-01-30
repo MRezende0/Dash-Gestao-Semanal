@@ -1,7 +1,7 @@
 import requests
 import csv
 from datetime import datetime, timedelta, timezone
-from scripts.auth import obter_token  # Importa a função de autenticação
+from auth import obter_token  # Importa a função de autenticação
 
 # Configurar a URL da API para coletar as tarefas
 url = "https://graph.microsoft.com/v1.0/planner/plans/MVnlyNS2W0SrUQxwXUPKuWUABICf/tasks"
@@ -105,7 +105,7 @@ def processar_dados(data):
 # Função para salvar os dados em CSV
 def salvar_csv(data):
     # Nome do arquivo CSV
-    file_name = "tarefas.csv"
+    file_name = "dados/tarefas.csv"
 
     # Cabeçalhos do CSV
     headers = ["Setor", "Status", "Data", "Colaborador", "Tipo"]
