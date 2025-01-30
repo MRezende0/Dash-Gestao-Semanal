@@ -57,11 +57,16 @@ tarefas = tarefas.sort_values("Data", ascending=False)
 
 # Garantir que a coluna 'Data' esteja no formato datetime
 tarefas['Data'] = pd.to_datetime(tarefas['Data'], dayfirst=True)
+tarefas["Setor"] = tarefas["Setor"].astype(int)
+tarefas["Status"] = tarefas["Status"].astype(str)
+tarefas["Colaborador"] = tarefas["Colaborador"].astype(str)
+tarefas["Tipo"] = tarefas["Tipo"].astype(str)
 
 ################################ MERGE COM UNIDADE E AREA ################################
 
 # Realizar a junção entre df_filtrado e base, trazendo as colunas 'unidade' e 'area' do 'base'
 tarefas = pd.merge(tarefas, base[['Setor', 'Unidade', 'Area']], on='Setor', how='left')
+tarefas["Unidade"] = tarefas["Unidade"].astype(str)
 
 ################################################# BOTÃO ATUALIZAR #################################################
 
@@ -105,153 +110,146 @@ if st.button("Atualizar dados"):
 
 ################################################# SIDEBAR - DASH ATIVIDADES #################################################
 
-# Função para atualizar o sidebar dinamicamente
 def update_sidebar(dashboard_number):
-
     if dashboard_number == 1:
-        
         st.sidebar.markdown("### Última Atualização")
 
         # Exibir a última data e hora de atualização na sidebar
-        st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
+        if 'ultima_atualizacao' in st.session_state:
+            st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
+        else:
+            st.sidebar.write("Não disponível")
 
         # Adicionar barra lateral
         st.sidebar.title("Filtros")
 
-        # Aplicando os filtros no DataFrame
-        tarefas_filtrado = tarefas.copy()
+        ################################ DATA ################################
 
-        st.markdown("""
-            <style>
-                /* Remove o padding e a margem do topo da sidebar */
-                .css-1d391kg {
-                    padding-top: 0 !important;
-                    margin-top: 0 !important;
-                }
+        # Converter min_value e max_value para datetime.datetime
+        min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
+        max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
 
-                /* Ajusta o espaço da sidebar */
-                .css-1d391kg .css-18e3th9 {
-                    margin-top: 0 !important;
-                }
-
-                /* Ajuste do padding da sidebar */
-                .css-1d391kg .css-1ynp1f4 {
-                    padding-top: 0 !important;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-
-    ################################ DATA ################################
-
-        # Seção de Filtro de Data (barra deslizante para selecionar intervalo de datas)
-        st.sidebar.subheader("Data")
-
-        # Converter as datas para datetime.date para o Streamlit aceitar
+        # Aplicando o slider com os valores convertidos
         data_inicio, data_fim = st.sidebar.slider(
-            "Selecione o intervalo de datas:",
-            min_value=tarefas_filtrado["Data"].min().date(),  # Converter para .date() para usar com o slider
-            max_value=tarefas_filtrado["Data"].max().date(),  # Converter para .date() para usar com o slider
-            value=(tarefas_filtrado["Data"].min().date(), tarefas_filtrado["Data"].max().date()),  # Definir o valor padrão como intervalo completo
-            format="DD/MM/YYYY",
+            "Selecione o intervalo de datas",
+            min_value=min_value,
+            max_value=max_value,
+            value=(min_value, max_value),  # Valor inicial do slider
+            format="DD/MM/YYYY",  # Formato de exibição das datas
+            key=f"date_slider_1_{dashboard_number}"  # Chave única para o slider
         )
 
-        # Filtro de Data: Convertendo a coluna 'Data' para datetime.date antes da comparação
-        tarefas_filtrado['Data'] = tarefas_filtrado['Data'].dt.date
+        # Agora você pode usar `data_inicio` e `data_fim` para filtrar as tarefas
+        tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
-        # Filtro de Data
-        tarefas_filtrado = tarefas_filtrado[
-            (tarefas_filtrado["Data"] >= data_inicio) & (tarefas_filtrado["Data"] <= data_fim)
-        ]
-
-    ################################ SETOR ################################
+        ################################ SETOR ################################
 
         # Seção de Filtro por Setor (campo para digitar o número do setor)
         st.sidebar.subheader("Setor")
         setor_selecionado = st.sidebar.text_input(
-            "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:"
+            "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
+            key=f"setor_input_{dashboard_number}"  # Chave única para o campo de texto
         )
 
         # Filtro de Setor
         if setor_selecionado:
-            tarefas_filtrado = tarefas_filtrado[tarefas_filtrado["Setor"].astype(str).str.contains(setor_selecionado)]
+            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
 
-    ################################ STATUS ################################
+        ################################ STATUS ################################
 
         # Seção de Filtro de Status (drop box para selecionar o status)
         st.sidebar.subheader("Status")
         status_selecionado = st.sidebar.selectbox(
             "Selecione o Status:",
-            options=["Todos"] + tarefas_filtrado["Status"].unique().tolist(),
+            options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
             index=0,
+            key=f"status_selectbox_{dashboard_number}"  # Chave única para o selectbox
         )
 
         # Filtro de Status
         if status_selecionado != "Todos":
-            tarefas_filtrado = tarefas_filtrado[tarefas_filtrado["Status"] == status_selecionado]
+            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Status"] == status_selecionado]
 
-    ################################ COLABORADOR ################################
+        ################################ COLABORADOR ################################
 
         # Seção de Filtro por Pessoas (drop box para selecionar a pessoa)
         st.sidebar.subheader("Colaborador")
         pessoa_selecionada = st.sidebar.selectbox(
             "Selecione a Pessoa:",
-            options=["Todos"] + tarefas_filtrado["Colaborador"].unique().tolist(),
+            options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
             index=0,
+            key=f"colaborador_selectbox_{dashboard_number}"  # Chave única para o selectbox
         )
 
         # Filtro de Pessoas
         if pessoa_selecionada != "Todos":
-            tarefas_filtrado = tarefas_filtrado[tarefas_filtrado["Colaborador"] == pessoa_selecionada]
+            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Colaborador"] == pessoa_selecionada]
 
-    ################################ TIPO DE PROJETO ################################
+        ################################ TIPO DE PROJETO ################################
 
         # Seção de Filtro por Projeto (drop box para selecionar o tipo de projeto)
         st.sidebar.subheader("Tipo")
         projeto_selecionado = st.sidebar.selectbox(
             "Selecione o Projeto:",
-            options=["Todos"] + tarefas_filtrado["Tipo"].unique().tolist(),
+            options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
             index=0,
+            key=f"projeto_selectbox_{dashboard_number}"  # Chave única para o selectbox
         )
 
         # Filtro de Projeto
         if projeto_selecionado != "Todos":
-            tarefas_filtrado = tarefas_filtrado[tarefas_filtrado["Tipo"] == projeto_selecionado]
+            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Tipo"] == projeto_selecionado]
 
-    ################################ UNIDADE ################################
+        ################################ UNIDADE ################################
 
         # Seção de Filtro de Unidade (botões para selecionar unidade)
         st.sidebar.subheader("Unidade")
         unidade_selecionada = st.sidebar.multiselect(
             "Selecione a(s) Unidade(s):",
-            options=tarefas_filtrado["Unidade"].unique().tolist(),
-            default=tarefas_filtrado["Unidade"].unique().tolist(),
+            options=tarefas_filtradas["Unidade"].unique().tolist(),
+            default=tarefas_filtradas["Unidade"].unique().tolist(),
+            key=f"unidade_multiselect_{dashboard_number}"  # Chave única para o multiselect
         )
 
         # Filtro de Unidade
         if unidade_selecionada:
-            tarefas_filtrado = tarefas_filtrado[tarefas_filtrado["Unidade"].isin(unidade_selecionada)]
+            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
 
         # Retorna o DataFrame filtrado
-        return tarefas_filtrado
+        return tarefas_filtradas
 
-################################################# SIDEBAR - DASH EXTRAS #################################################
+    ################################################# SIDEBAR - DASH EXTRAS #################################################
 
     elif dashboard_number == 2:
         st.sidebar.write("Opções específicas do Dashboard 2")
+        # Slider para Data (se necessário para o Dashboard 2)
+        data_inicio, data_fim = st.sidebar.slider(
+            "Selecione o intervalo de datas",
+            min_value=min_value,
+            max_value=max_value,
+            value=(min_value, max_value),
+            format="YYYY-MM-DD",
+            key=f"date_slider_2_{dashboard_number}"  # Chave única para o slider
+        )
 
-################################################# SIDEBAR - DASH AUDITORIA #################################################
+    ################################################# SIDEBAR - DASH AUDITORIA #################################################
 
     elif dashboard_number == 3:
         st.sidebar.write("Opções específicas do Dashboard 3")
+        # Slider para Data (se necessário para o Dashboard 2)
+        data_inicio, data_fim = st.sidebar.slider(
+            "Selecione o intervalo de datas",
+            min_value=min_value,
+            max_value=max_value,
+            value=(min_value, max_value),
+            format="YYYY-MM-DD",
+            key=f"date_slider_3_{dashboard_number}"  # Chave única para o slider
+        )
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
 # Função para o Dashboard 1
 def dashboard_1():
-    # st.write("### Atividades Semanais")
-    #st.title("Atividades Semanais")
-
-    # Cabeçalho da página centralizado
     st.markdown(
         """
         <style>
@@ -266,6 +264,61 @@ def dashboard_1():
 
     # Título centralizado
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
+
+    tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
+    
+    # Exibe o DataFrame filtrado para visualização (opcional)
+    st.write(tarefas_filtradas)
+
+    # Gráfico de Atividades por Colaborador
+    df_contagem_responsavel = (
+        tarefas_filtradas.groupby("Colaborador")["Tipo"].count().reset_index()
+    )
+    df_contagem_responsavel.columns = ["Colaborador", "Quantidade de Projetos"]
+
+    # Ordenar o DataFrame do maior para o menor número de projetos
+    df_contagem_responsavel = df_contagem_responsavel.sort_values(
+        by="Quantidade de Projetos", ascending=False
+    )
+
+    # Criar o gráfico
+    st.subheader("Atividades por Colaborador")
+    fig_responsavel = px.bar(
+        df_contagem_responsavel,
+        x="Quantidade de Projetos",
+        y="Colaborador",
+        color="Colaborador",
+        orientation="h",
+        text="Quantidade de Projetos",
+    )
+
+    # Configurar o texto corretamente no gráfico
+    fig_responsavel.update_traces(
+        texttemplate="%{text}",  # Exibir o texto diretamente dos valores configurados
+        textposition="outside"  # Posicionar o texto fora das barras
+    )
+
+    # Remover a legenda
+    fig_responsavel.update_layout(showlegend=False)
+
+    fig_responsavel.update_layout(margin=dict(l=10, r=10, t=10, b=10))  # Margens mais compactas
+
+    # Remover as linhas de contagem (ticks) no eixo X
+    fig_responsavel.update_layout(
+        xaxis=dict(
+            showticklabels=False,  # Remove os ticks do eixo X
+            title=""  # Remove o nome do eixo X
+        ),
+        yaxis=dict(
+            title=""  # Remove o nome do eixo Y
+        )
+    )
+
+    # Exibir o gráfico
+    st.plotly_chart(fig_responsavel)
+
+    # Adiciona uma linha horizontal e espaçamento
+    st.divider()
 
 ################################################# CABEÇALHO #################################################
 
@@ -297,34 +350,34 @@ def dashboard_1():
         """, unsafe_allow_html=True
     )
 
-    # Layout em colunas
-    col1, col2, col3 = st.columns(3)
+    # # Layout em colunas
+    # col1, col2, col3 = st.columns(3)
 
-    with col1:
-        total_area = tarefas['Area'].sum()
-        formatted_area = f"{total_area:,.0f}".replace(',', '.')
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Área Total</strong></h8>
-                <h3>{formatted_area} ha</h3>
-            </div>
-        """, unsafe_allow_html=True)
+    # with col1:
+    #     total_area = tarefas_filtradas['Area'].sum()
+    #     formatted_area = f"{total_area:,.0f}".replace(',', '.')
+    #     st.markdown(f"""
+    #         <div class="info-box">
+    #             <h8><strong>Área Total</strong></h8>
+    #             <h3>{formatted_area} ha</h3>
+    #         </div>
+    #     """, unsafe_allow_html=True)
 
-    with col2:
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Quantidade de Atividades</strong></h8>
-                <h3>{tarefas['Colaborador'].size}</h3>
-            </div>
-        """, unsafe_allow_html=True)
+    # with col2:
+    #     st.markdown(f"""
+    #         <div class="info-box">
+    #             <h8><strong>Quantidade de Atividades</strong></h8>
+    #             <h3>{tarefas_filtradas['Colaborador'].size}</h3>
+    #         </div>
+    #     """, unsafe_allow_html=True)
 
-    with col3:
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Colaboradores</strong></h8>
-                <h3>{tarefas['Colaborador'].unique().size}</h3>
-            </div>
-        """, unsafe_allow_html=True)
+    # with col3:
+    #     st.markdown(f"""
+    #         <div class="info-box">
+    #             <h8><strong>Colaboradores</strong></h8>
+    #             <h3>{tarefas_filtradas['Colaborador'].unique().size}</h3>
+    #         </div>
+    #     """, unsafe_allow_html=True)
 
     # Adiciona uma linha horizontal e espaçamento
     st.divider()
@@ -385,7 +438,7 @@ def dashboard_1():
 
     # Calcular a quantidade de projetos por tipo no DataFrame filtrado
     df_contagem_tipo = (
-        tarefas.groupby("Tipo")["Colaborador"].count().reset_index()
+        tarefas_filtradas.groupby("Tipo")["Colaborador"].count().reset_index()
     )
     df_contagem_tipo.columns = ["Tipo", "Quantidade de Projetos"]
 
@@ -433,7 +486,7 @@ def dashboard_1():
 
     # Calcular a quantidade de projetos por status
     df_contagem_status = (
-        tarefas.groupby("Status")["Tipo"].count().reset_index()
+        tarefas_filtradas.groupby("Status")["Tipo"].count().reset_index()
     )
     df_contagem_status.columns = ["Status", "Quantidade de Projetos"]
 
@@ -496,8 +549,11 @@ def dashboard_1():
     # Criar a coluna 'MÊS' corretamente formatada em português
     pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
 
+    # Remover duplicatas para considerar apenas setores distintos
+    df_unico = pos_aplicacao.drop_duplicates(subset=["MÊS", "SETOR"])
+
     # Contar quantas vezes cada mês aparece
-    df_contagem = pos_aplicacao["MÊS"].value_counts().reset_index()
+    df_contagem = df_unico["MÊS"].value_counts().reset_index()
     df_contagem.columns = ["MÊS", "QUANTIDADE"]
 
     # Criar o gráfico com a ordem correta dos meses
@@ -525,8 +581,8 @@ def dashboard_1():
     )
 
     fig_mes.update_layout(
-    xaxis_title=None,  # Remove o título do eixo X
-    yaxis_title=None   # Remove o título do eixo Y
+        xaxis_title=None,  # Remove o título do eixo X
+        yaxis_title=None   # Remove o título do eixo Y
     )
 
     # Exibir o gráfico
@@ -537,7 +593,7 @@ def dashboard_1():
 ################################################# GRÁFICO - UNIDADE #################################################
 
     # Calcular a quantidade de projetos por unidade
-    df_contagem_unidade = tarefas.groupby("Unidade")["Tipo"].count().reset_index()
+    df_contagem_unidade = tarefas_filtradas.groupby("Unidade")["Tipo"].count().reset_index()
     df_contagem_unidade.columns = ["Unidade", "Quantidade de Projetos"]
 
     # Criar o gráfico de pizza
