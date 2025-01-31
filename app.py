@@ -138,7 +138,7 @@ def update_sidebar(dashboard_number):
         )
 
         # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
-        tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+        tarefas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
         # ################################ SETOR ################################
 
@@ -214,7 +214,7 @@ def update_sidebar(dashboard_number):
         #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
 
         # Retorna o DataFrame filtrado
-        return tarefas_filtradas
+        # return tarefas_filtradas
 
     ################################################# SIDEBAR - DASH EXTRAS #################################################
 
