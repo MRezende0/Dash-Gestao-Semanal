@@ -161,7 +161,7 @@ def update_sidebar(dashboard_number):
             "Selecione o Status:",
             options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
             index=0,
-            key=f"status_selectbox_{dashboard_number}"  # Chave única para o selectbox
+            key="selectbox_1"  # Chave única para o selectbox
         )
 
         # Filtro de Status
@@ -176,7 +176,7 @@ def update_sidebar(dashboard_number):
             "Selecione a Pessoa:",
             options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
             index=0,
-            key=f"colaborador_selectbox_{dashboard_number}"  # Chave única para o selectbox
+            key="selectbox_2"  # Chave única para o selectbox
         )
 
         # Filtro de Pessoas
@@ -191,7 +191,7 @@ def update_sidebar(dashboard_number):
             "Selecione o Projeto:",
             options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
             index=0,
-            key=f"projeto_selectbox_{dashboard_number}"  # Chave única para o selectbox
+            key="selectbox_3"  # Chave única para o selectbox
         )
 
         # Filtro de Projeto
@@ -220,29 +220,11 @@ def update_sidebar(dashboard_number):
 
     elif dashboard_number == 2:
         st.sidebar.write("Opções específicas do Dashboard 2")
-        # Slider para Data (se necessário para o Dashboard 2)
-        # data_inicio, data_fim = st.sidebar.slider(
-        #     "Selecione o intervalo de datas",
-        #     min_value=min_value,
-        #     max_value=max_value,
-        #     value=(min_value, max_value),
-        #     format="YYYY-MM-DD",
-        #     key="date_slider_2"  # Chave única para o slider
-        # )
 
     ################################################# SIDEBAR - DASH AUDITORIA #################################################
 
     elif dashboard_number == 3:
         st.sidebar.write("Opções específicas do Dashboard 3")
-        # Slider para Data (se necessário para o Dashboard 2)
-        # data_inicio, data_fim = st.sidebar.slider(
-        #     "Selecione o intervalo de datas",
-        #     min_value=min_value,
-        #     max_value=max_value,
-        #     value=(min_value, max_value),
-        #     format="YYYY-MM-DD",
-        #     key="date_slider_3"  # Chave única para o slider
-        # )
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
