@@ -112,14 +112,14 @@ def update_sidebar(dashboard_number):
     if dashboard_number == 1:
         st.sidebar.markdown("### Última Atualização")
 
-        # # Exibir a última data e hora de atualização na sidebar
-        # if 'ultima_atualizacao' in st.session_state:
-        #     st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
-        # else:
-        #     st.sidebar.write("Não disponível")
+        # Exibir a última data e hora de atualização na sidebar
+        if 'ultima_atualizacao' in st.session_state:
+            st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
+        else:
+            st.sidebar.write("Não disponível")
 
-        # # Adicionar barra lateral
-        # st.sidebar.title("Filtros")
+        # Adicionar barra lateral
+        st.sidebar.title("Filtros")
 
         # ################################ DATA ################################
 
