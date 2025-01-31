@@ -245,7 +245,8 @@ def dashboard_1():
     # Título centralizado
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
 
-    tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
+    # tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
+    tarefas_filtradas = tarefas.copy()
     
     # Exibe o DataFrame filtrado para visualização (opcional)
     st.write(tarefas_filtradas)
