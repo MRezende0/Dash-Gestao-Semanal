@@ -54,7 +54,7 @@ pos_aplicacao = pd.read_excel("dados/pos_aplicacao.xlsx")
 tarefas = tarefas.sort_values("Data", ascending=False)
 
 # Garantir que a coluna 'Data' esteja no formato datetime
-tarefas['Data'] = pd.to_datetime(tarefas['Data'], dayfirst=True)
+tarefas['Data'] = pd.to_datetime(tarefas['Data'], dayfirst=True, errors='coerce')
 tarefas["Setor"] = tarefas["Setor"].astype(int)
 tarefas["Status"] = tarefas["Status"].astype(str)
 tarefas["Colaborador"] = tarefas["Colaborador"].astype(str)
