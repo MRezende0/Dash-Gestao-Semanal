@@ -121,24 +121,24 @@ def update_sidebar(dashboard_number):
         # Adicionar barra lateral
         st.sidebar.title("Filtros")
 
-        # ################################ DATA ################################
+        ################################ DATA ################################
 
-        # # Converter min_value e max_value para datetime.datetime
-        # min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
-        # max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
+        # Converter min_value e max_value para datetime.datetime
+        min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
+        max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
 
-        # # Aplicando o slider com os valores convertidos
-        # data_inicio, data_fim = st.sidebar.slider(
-        #     "Selecione o intervalo de datas",
-        #     min_value=min_value,
-        #     max_value=max_value,
-        #     value=(min_value, max_value),  # Valor inicial do slider
-        #     format="DD/MM/YYYY",  # Formato de exibição das datas
-        #     key="slider_1_1"  # Chave única para o slider
-        # )
+        # Aplicando o slider com os valores convertidos
+        data_inicio, data_fim = st.sidebar.slider(
+            "Selecione o intervalo de datas",
+            min_value=min_value,
+            max_value=max_value,
+            value=(min_value, max_value),  # Valor inicial do slider
+            format="DD/MM/YYYY",  # Formato de exibição das datas
+            key="slider_1_1"  # Chave única para o slider
+        )
 
-        # # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
-        # tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+        # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
+        tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
         # ################################ SETOR ################################
 
@@ -213,8 +213,8 @@ def update_sidebar(dashboard_number):
         # if unidade_selecionada:
         #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
 
-        # # Retorna o DataFrame filtrado
-        # return tarefas_filtradas
+        # Retorna o DataFrame filtrado
+        return tarefas_filtradas
 
     ################################################# SIDEBAR - DASH EXTRAS #################################################
 
