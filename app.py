@@ -278,34 +278,34 @@ def dashboard_1():
         """, unsafe_allow_html=True
     )
 
-    # # Layout em colunas
-    # col1, col2, col3 = st.columns(3)
+    # Layout em colunas
+    col1, col2, col3 = st.columns(3)
 
-    # with col1:
-    #     total_area = tarefas_filtradas['Area'].sum()
-    #     formatted_area = f"{total_area:,.0f}".replace(',', '.')
-    #     st.markdown(f"""
-    #         <div class="info-box">
-    #             <h8><strong>Área Total</strong></h8>
-    #             <h3>{formatted_area} ha</h3>
-    #         </div>
-    #     """, unsafe_allow_html=True)
+    with col1:
+        total_area = tarefas_filtradas['Area'].sum()
+        formatted_area = f"{total_area:,.0f}".replace(',', '.')
+        st.markdown(f"""
+            <div class="info-box">
+                <h8><strong>Área Total</strong></h8>
+                <h3>{formatted_area} ha</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
-    # with col2:
-    #     st.markdown(f"""
-    #         <div class="info-box">
-    #             <h8><strong>Quantidade de Atividades</strong></h8>
-    #             <h3>{tarefas_filtradas['Colaborador'].size}</h3>
-    #         </div>
-    #     """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+            <div class="info-box">
+                <h8><strong>Quantidade de Atividades</strong></h8>
+                <h3>{tarefas_filtradas['Colaborador'].size}</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
-    # with col3:
-    #     st.markdown(f"""
-    #         <div class="info-box">
-    #             <h8><strong>Colaboradores</strong></h8>
-    #             <h3>{tarefas_filtradas['Colaborador'].unique().size}</h3>
-    #         </div>
-    #     """, unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"""
+            <div class="info-box">
+                <h8><strong>Colaboradores</strong></h8>
+                <h3>{tarefas_filtradas['Colaborador'].unique().size}</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Adiciona uma linha horizontal e espaçamento
     st.divider()
