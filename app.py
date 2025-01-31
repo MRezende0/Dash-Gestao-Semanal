@@ -157,7 +157,7 @@ def aplicar_filtros(tarefas):
 ################################################# FILTRO DE MÊS PARA PÓS-APLICAÇÃO #################################################
 
 def filtrar_pos_aplicacao(pos_aplicacao):
-    st.sidebar.title("Filtros para Mapas de Pós-Aplicação")
+    st.sidebar.markdown("### Mapa de Pós-Aplicação")
 
     # Extrair os meses disponíveis no dataset
     pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
@@ -304,8 +304,8 @@ def dashboard_1():
 ################################################# LAYOUT PRINCIPAL #################################################
 
 def main():
-    st.sidebar.title("Navegação")
-    opcao = st.sidebar.radio("Selecione o Dashboard", ["Atividades Semanais", "Atividades Extras", "Auditoria"])
+    st.sidebar.title("Selecione o Dashboard")
+    opcao = st.sidebar.radio("", ["Atividades Semanais", "Atividades Extras", "Auditoria"])
 
     if opcao == "Atividades Semanais":
         dashboard_1()
