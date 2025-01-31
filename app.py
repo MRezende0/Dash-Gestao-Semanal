@@ -247,59 +247,6 @@ def dashboard_1():
 
     # tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
     tarefas_filtradas = tarefas.copy()
-    
-    # Exibe o DataFrame filtrado para visualização (opcional)
-    st.write(tarefas_filtradas)
-
-    # Gráfico de Atividades por Colaborador
-    df_contagem_responsavel = (
-        tarefas_filtradas.groupby("Colaborador")["Tipo"].count().reset_index()
-    )
-    df_contagem_responsavel.columns = ["Colaborador", "Quantidade de Projetos"]
-
-    # Ordenar o DataFrame do maior para o menor número de projetos
-    df_contagem_responsavel = df_contagem_responsavel.sort_values(
-        by="Quantidade de Projetos", ascending=False
-    )
-
-    # Criar o gráfico
-    st.subheader("Atividades por Colaborador")
-    fig_responsavel = px.bar(
-        df_contagem_responsavel,
-        x="Quantidade de Projetos",
-        y="Colaborador",
-        color="Colaborador",
-        orientation="h",
-        text="Quantidade de Projetos",
-    )
-
-    # Configurar o texto corretamente no gráfico
-    fig_responsavel.update_traces(
-        texttemplate="%{text}",  # Exibir o texto diretamente dos valores configurados
-        textposition="outside"  # Posicionar o texto fora das barras
-    )
-
-    # Remover a legenda
-    fig_responsavel.update_layout(showlegend=False)
-
-    fig_responsavel.update_layout(margin=dict(l=10, r=10, t=10, b=10))  # Margens mais compactas
-
-    # Remover as linhas de contagem (ticks) no eixo X
-    fig_responsavel.update_layout(
-        xaxis=dict(
-            showticklabels=False,  # Remove os ticks do eixo X
-            title=""  # Remove o nome do eixo X
-        ),
-        yaxis=dict(
-            title=""  # Remove o nome do eixo Y
-        )
-    )
-
-    # Exibir o gráfico
-    st.plotly_chart(fig_responsavel, key="fig_responsavel_1")
-
-    # Adiciona uma linha horizontal e espaçamento
-    st.divider()
 
 ################################################# CABEÇALHO #################################################
 
@@ -365,9 +312,9 @@ def dashboard_1():
 
 ################################################# GRÁFICO - COLABORADORES #################################################
 
-    # Calcular a quantidade de projetos por colaborador
+        # Gráfico de Atividades por Colaborador
     df_contagem_responsavel = (
-        tarefas.groupby("Colaborador")["Tipo"].count().reset_index()
+        tarefas_filtradas.groupby("Colaborador")["Tipo"].count().reset_index()
     )
     df_contagem_responsavel.columns = ["Colaborador", "Quantidade de Projetos"]
 
@@ -384,7 +331,7 @@ def dashboard_1():
         y="Colaborador",
         color="Colaborador",
         orientation="h",
-        text="Quantidade de Projetos",  # Vincular diretamente o texto ao valor correto
+        text="Quantidade de Projetos",
     )
 
     # Configurar o texto corretamente no gráfico
@@ -410,7 +357,7 @@ def dashboard_1():
     )
 
     # Exibir o gráfico
-    st.plotly_chart(fig_responsavel)
+    st.plotly_chart(fig_responsavel, key="fig_responsavel_1")
 
     # Adiciona uma linha horizontal e espaçamento
     st.divider()
