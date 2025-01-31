@@ -124,8 +124,8 @@ def update_sidebar(dashboard_number):
         ################################ DATA ################################
 
         # Converter min_value e max_value para datetime.datetime
-        min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
-        max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
+        min_value = tarefas_filtradas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
+        max_value = tarefas_filtradas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
 
         # Aplicando o slider com os valores convertidos
         data_inicio, data_fim = st.sidebar.slider(
@@ -138,7 +138,7 @@ def update_sidebar(dashboard_number):
         )
 
         # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
-        tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+        tarefas_filtradas = tarefas_filtradas[(tarefas_filtradas['Data'] >= data_inicio) & (tarefas_filtradas['Data'] <= data_fim)]
 
         # ################################ SETOR ################################
 
@@ -246,7 +246,8 @@ def dashboard_1():
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
 
     # tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
-    tarefas_filtradas = tarefas.copy()
+    # tarefas_filtradas = tarefas.copy()
+    tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros da sidebar
 
 ################################################# CABEÇALHO #################################################
 
