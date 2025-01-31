@@ -222,6 +222,11 @@ def dashboard_1():
     )
     fig_responsavel.update_traces(texttemplate="%{text}", textposition="outside")
     fig_responsavel.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
+    fig_responsavel.update_layout(
+        xaxis=dict(showticklabels=False),  # Remove rótulos do eixo X
+        yaxis=dict(showticklabels=False)   # Remove rótulos do eixo Y
+    )
+
     st.plotly_chart(fig_responsavel)
 
     st.divider()
