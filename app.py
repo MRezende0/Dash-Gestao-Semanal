@@ -66,21 +66,6 @@ def carregar_dados():
 
 tarefas, extras, auditoria, pos_aplicacao = carregar_dados()
 
-################################################# BOTÃO ATUALIZAR #################################################
-
-if st.button("Atualizar dados"):
-    atualizar_data_hora()
-    try:
-        with st.spinner("Autenticando token..."):
-            subprocess.run(["python", "scripts/auth.py"], check=True)
-        with st.spinner("Coletando dados..."):
-            subprocess.run(["python", "scripts/coleta.py"], check=True)
-        st.success("Dados atualizados com sucesso!")
-        time.sleep(2)
-        st.experimental_rerun()  # Recarrega a página para atualizar os dados
-    except subprocess.CalledProcessError as e:
-        st.error(f"Erro ao executar um dos scripts: {e}")
-
 ################################################# SIDEBAR - FILTROS #################################################
 
 def aplicar_filtros(tarefas):
@@ -88,6 +73,20 @@ def aplicar_filtros(tarefas):
     st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
 
     st.sidebar.title("Filtros")
+
+    # Botão para atualizar os dados
+    if st.sidebar.button("Atualizar dados"):
+        atualizar_data_hora()
+        try:
+            with st.spinner("Autenticando token..."):
+                subprocess.run(["python", "scripts/auth.py"], check=True)
+            with st.spinner("Coletando dados..."):
+                subprocess.run(["python", "scripts/coleta.py"], check=True)
+            st.success("Dados atualizados com sucesso!")
+            time.sleep(2)
+            st.experimental_rerun()  # Recarrega a página para atualizar os dados
+        except subprocess.CalledProcessError as e:
+            st.error(f"Erro ao executar um dos scripts: {e}")
 
     # Filtro de datas
     min_data = tarefas["Data"].min().to_pydatetime()
@@ -157,7 +156,7 @@ def aplicar_filtros(tarefas):
 ################################################# FILTRO DE MÊS PARA PÓS-APLICAÇÃO #################################################
 
 def filtrar_pos_aplicacao(pos_aplicacao):
-    st.sidebar.markdown("### Mapa de Pós-Aplicação")
+    st.sidebar.title("Filtros para Mapas de Pós-Aplicação")
 
     # Extrair os meses disponíveis no dataset
     pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
@@ -304,8 +303,8 @@ def dashboard_1():
 ################################################# LAYOUT PRINCIPAL #################################################
 
 def main():
-    st.sidebar.title("Selecione o Dashboard")
-    opcao = st.sidebar.radio("", ["Atividades Semanais", "Atividades Extras", "Auditoria"])
+    st.sidebar.title("Navegação")
+    opcao = st.sidebar.radio("Selecione o Dashboard", ["Atividades Semanais", "Atividades Extras", "Auditoria"])
 
     if opcao == "Atividades Semanais":
         dashboard_1()
