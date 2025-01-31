@@ -112,109 +112,109 @@ def update_sidebar(dashboard_number):
     if dashboard_number == 1:
         st.sidebar.markdown("### Última Atualização")
 
-        # Exibir a última data e hora de atualização na sidebar
-        if 'ultima_atualizacao' in st.session_state:
-            st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
-        else:
-            st.sidebar.write("Não disponível")
+        # # Exibir a última data e hora de atualização na sidebar
+        # if 'ultima_atualizacao' in st.session_state:
+        #     st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
+        # else:
+        #     st.sidebar.write("Não disponível")
 
-        # Adicionar barra lateral
-        st.sidebar.title("Filtros")
+        # # Adicionar barra lateral
+        # st.sidebar.title("Filtros")
 
-        ################################ DATA ################################
+        # ################################ DATA ################################
 
-        # Converter min_value e max_value para datetime.datetime
-        min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
-        max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
+        # # Converter min_value e max_value para datetime.datetime
+        # min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
+        # max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
 
-        # Aplicando o slider com os valores convertidos
-        data_inicio, data_fim = st.sidebar.slider(
-            "Selecione o intervalo de datas",
-            min_value=min_value,
-            max_value=max_value,
-            value=(min_value, max_value),  # Valor inicial do slider
-            format="DD/MM/YYYY",  # Formato de exibição das datas
-            key="slider_1_1"  # Chave única para o slider
-        )
+        # # Aplicando o slider com os valores convertidos
+        # data_inicio, data_fim = st.sidebar.slider(
+        #     "Selecione o intervalo de datas",
+        #     min_value=min_value,
+        #     max_value=max_value,
+        #     value=(min_value, max_value),  # Valor inicial do slider
+        #     format="DD/MM/YYYY",  # Formato de exibição das datas
+        #     key="slider_1_1"  # Chave única para o slider
+        # )
 
-        # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
-        tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+        # # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
+        # tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
-        ################################ SETOR ################################
+        # ################################ SETOR ################################
 
-        # Seção de Filtro por Setor (campo para digitar o número do setor)
-        st.sidebar.subheader("Setor")
-        setor_selecionado = st.sidebar.text_input(
-            "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
-            key="input_1_1"  # Chave única para o campo de texto
-        )
+        # # Seção de Filtro por Setor (campo para digitar o número do setor)
+        # st.sidebar.subheader("Setor")
+        # setor_selecionado = st.sidebar.text_input(
+        #     "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
+        #     key="input_1_1"  # Chave única para o campo de texto
+        # )
 
-        # Filtro de Setor
-        if setor_selecionado:
-            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
+        # # Filtro de Setor
+        # if setor_selecionado:
+        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
 
-        ################################ STATUS ################################
+        # ################################ STATUS ################################
 
-        # Seção de Filtro de Status (drop box para selecionar o status)
-        st.sidebar.subheader("Status")
-        status_selecionado = st.sidebar.selectbox(
-            "Selecione o Status:",
-            options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
-            index=0,
-            key="selectbox_1_1"  # Chave única para o selectbox
-        )
+        # # Seção de Filtro de Status (drop box para selecionar o status)
+        # st.sidebar.subheader("Status")
+        # status_selecionado = st.sidebar.selectbox(
+        #     "Selecione o Status:",
+        #     options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
+        #     index=0,
+        #     key="selectbox_1_1"  # Chave única para o selectbox
+        # )
 
-        # Filtro de Status
-        if status_selecionado != "Todos":
-            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Status"] == status_selecionado]
+        # # Filtro de Status
+        # if status_selecionado != "Todos":
+        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Status"] == status_selecionado]
 
-        ################################ COLABORADOR ################################
+        # ################################ COLABORADOR ################################
 
-        # Seção de Filtro por Pessoas (drop box para selecionar a pessoa)
-        st.sidebar.subheader("Colaborador")
-        pessoa_selecionada = st.sidebar.selectbox(
-            "Selecione a Pessoa:",
-            options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
-            index=0,
-            key="selectbox_1_2"  # Chave única para o selectbox
-        )
+        # # Seção de Filtro por Pessoas (drop box para selecionar a pessoa)
+        # st.sidebar.subheader("Colaborador")
+        # pessoa_selecionada = st.sidebar.selectbox(
+        #     "Selecione a Pessoa:",
+        #     options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
+        #     index=0,
+        #     key="selectbox_1_2"  # Chave única para o selectbox
+        # )
 
-        # Filtro de Pessoas
-        if pessoa_selecionada != "Todos":
-            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Colaborador"] == pessoa_selecionada]
+        # # Filtro de Pessoas
+        # if pessoa_selecionada != "Todos":
+        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Colaborador"] == pessoa_selecionada]
 
-        ################################ TIPO DE PROJETO ################################
+        # ################################ TIPO DE PROJETO ################################
 
-        # Seção de Filtro por Projeto (drop box para selecionar o tipo de projeto)
-        st.sidebar.subheader("Tipo")
-        projeto_selecionado = st.sidebar.selectbox(
-            "Selecione o Projeto:",
-            options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
-            index=0,
-            key="selectbox_1_3"  # Chave única para o selectbox
-        )
+        # # Seção de Filtro por Projeto (drop box para selecionar o tipo de projeto)
+        # st.sidebar.subheader("Tipo")
+        # projeto_selecionado = st.sidebar.selectbox(
+        #     "Selecione o Projeto:",
+        #     options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
+        #     index=0,
+        #     key="selectbox_1_3"  # Chave única para o selectbox
+        # )
 
-        # Filtro de Projeto
-        if projeto_selecionado != "Todos":
-            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Tipo"] == projeto_selecionado]
+        # # Filtro de Projeto
+        # if projeto_selecionado != "Todos":
+        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Tipo"] == projeto_selecionado]
 
-        ################################ UNIDADE ################################
+        # ################################ UNIDADE ################################
 
-        # Seção de Filtro de Unidade (botões para selecionar unidade)
-        st.sidebar.subheader("Unidade")
-        unidade_selecionada = st.sidebar.multiselect(
-            "Selecione a(s) Unidade(s):",
-            options=tarefas_filtradas["Unidade"].unique().tolist(),
-            default=tarefas_filtradas["Unidade"].unique().tolist(),
-            key="multiselect_1_1"  # Chave única para o multiselect
-        )
+        # # Seção de Filtro de Unidade (botões para selecionar unidade)
+        # st.sidebar.subheader("Unidade")
+        # unidade_selecionada = st.sidebar.multiselect(
+        #     "Selecione a(s) Unidade(s):",
+        #     options=tarefas_filtradas["Unidade"].unique().tolist(),
+        #     default=tarefas_filtradas["Unidade"].unique().tolist(),
+        #     key="multiselect_1_1"  # Chave única para o multiselect
+        # )
 
-        # Filtro de Unidade
-        if unidade_selecionada:
-            tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
+        # # Filtro de Unidade
+        # if unidade_selecionada:
+        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
 
-        # Retorna o DataFrame filtrado
-        return tarefas_filtradas
+        # # Retorna o DataFrame filtrado
+        # return tarefas_filtradas
 
     ################################################# SIDEBAR - DASH EXTRAS #################################################
 
