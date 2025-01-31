@@ -1,4 +1,34 @@
 Setor,Status,Data,Colaborador,Tipo
+3475,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3418,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3660,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3654,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3652,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3526,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3643,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3635,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3631,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3529,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3627,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3626,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3619,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3614,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3609,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3603,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3601,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3594,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3424,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3409,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3388,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3350,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3306,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3293,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3035,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3016,A Fazer,30/01/2025,Camila,Mapa de Pós-Plantio
+3570,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3555,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3535,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
+3534,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
 3531,Concluído,30/01/2025,Maico,Mapa de Pós-Plantio
 634,A Fazer,30/01/2025,Camila,Mapa de Pré-Plantio
 1209,A Fazer,30/01/2025,Camila,Mapa de Pré-Plantio
@@ -6,7 +36,6 @@ Setor,Status,Data,Colaborador,Tipo
 3518,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
 3516,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
 3494,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
-3022,Em andamento,29/01/2025,Willian,Auditoria
 3419,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
 3398,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
 3381,Concluído,29/01/2025,Maico,Mapa de Pós-Plantio
@@ -45,7 +74,7 @@ Setor,Status,Data,Colaborador,Tipo
 460,Concluído,24/01/2025,Maico,Projeto de Sulcação
 3249,Concluído,21/01/2025,Maico,Mapa de Cadastro
 636,Concluído,20/01/2025,Maico,Projeto de Sulcação
-3024,A Fazer,17/01/2025,Willian,Mapa de Sistematização
+3024,Em andamento,17/01/2025,Willian,Mapa de Sistematização
 1626,Concluído,17/01/2025,Camila,Mapa de Pós-Plantio
 1588,Concluído,17/01/2025,Camila,Mapa de Pós-Plantio
 1412,Concluído,17/01/2025,Camila,Mapa de Pós-Plantio
@@ -164,7 +193,7 @@ Setor,Status,Data,Colaborador,Tipo
 3466,A Fazer,16/01/2025,Willian,Mapa de Sistematização
 3465,A Fazer,16/01/2025,Willian,Mapa de Sistematização
 1627,Concluído,16/01/2025,Willian,Mapa de Pós-Plantio
-3823,Em andamento,16/01/2025,Willian,Mapa de Sistematização
+3823,Concluído,16/01/2025,Willian,Mapa de Sistematização
 1587,Concluído,16/01/2025,Willian,Mapa de Pós-Plantio
 1584,Concluído,16/01/2025,Willian,Mapa de Pós-Plantio
 3050,Concluído,13/01/2025,Maico,Mapa de Pré-Plantio

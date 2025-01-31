@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 from datetime import datetime
 import subprocess
@@ -60,6 +59,9 @@ def carregar_dados():
     tarefas = pd.merge(tarefas, base[['Setor', 'Unidade', 'Area']], on='Setor', how='left')
     tarefas["Unidade"] = tarefas["Unidade"].astype(str)
 
+    # Garantir que a coluna 'DATA' do pos_aplicacao esteja no formato datetime
+    pos_aplicacao["DATA"] = pd.to_datetime(pos_aplicacao["DATA"], format="%d/%m/%Y", errors="coerce")
+
     return tarefas, extras, auditoria, pos_aplicacao
 
 tarefas, extras, auditoria, pos_aplicacao = carregar_dados()
@@ -81,15 +83,15 @@ if st.button("Atualizar dados"):
 
 ################################################# SIDEBAR - FILTROS #################################################
 
-def aplicar_filtros(tarefas):
+def aplicar_filtros(tarefas, pos_aplicacao):
     st.sidebar.markdown("### Última Atualização")
     st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
 
     st.sidebar.title("Filtros")
 
     # Filtro de datas
-    min_data = tarefas["Data"].min().to_pydatetime()
-    max_data = tarefas["Data"].max().to_pydatetime()
+    min_data = min(tarefas["Data"].min(), pos_aplicacao["DATA"].min()).to_pydatetime()
+    max_data = max(tarefas["Data"].max(), pos_aplicacao["DATA"].max()).to_pydatetime()
     data_inicio, data_fim = st.sidebar.slider(
         "Selecione o intervalo de datas",
         min_value=min_data,
@@ -98,7 +100,12 @@ def aplicar_filtros(tarefas):
         format="DD/MM/YYYY",
         key="slider_data"
     )
+
+    # Aplicar filtro de datas ao dataset de tarefas
     tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+
+    # Aplicar filtro de datas ao dataset de pós-aplicação
+    pos_aplicacao_filtrada = pos_aplicacao[(pos_aplicacao['DATA'] >= data_inicio) & (pos_aplicacao['DATA'] <= data_fim)]
 
     # Filtro de Setor
     setor_selecionado = st.sidebar.text_input(
@@ -107,6 +114,7 @@ def aplicar_filtros(tarefas):
     )
     if setor_selecionado:
         tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
+        pos_aplicacao_filtrada = pos_aplicacao_filtrada[pos_aplicacao_filtrada["SETOR"].astype(str).str.contains(setor_selecionado)]
 
     # Filtro de Status
     status_selecionado = st.sidebar.selectbox(
@@ -147,8 +155,9 @@ def aplicar_filtros(tarefas):
     )
     if unidades_selecionadas:
         tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidades_selecionadas)]
+        pos_aplicacao_filtrada = pos_aplicacao_filtrada[pos_aplicacao_filtrada["UNIDADE"].isin(unidades_selecionadas)]
 
-    return tarefas_filtradas
+    return tarefas_filtradas, pos_aplicacao_filtrada
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
@@ -167,8 +176,8 @@ def dashboard_1():
 
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
 
-    # Aplica os filtros e obtém o DataFrame filtrado
-    tarefas_filtradas = aplicar_filtros(tarefas)
+    # Aplica os filtros e obtém os DataFrames filtrados
+    tarefas_filtradas, pos_aplicacao_filtrada = aplicar_filtros(tarefas, pos_aplicacao)
 
     # Exibe métricas
     col1, col2, col3 = st.columns(3)
@@ -241,9 +250,8 @@ def dashboard_1():
 
     # Gráfico de Pós-Aplicação
     st.subheader("Mapas de Pós-Aplicação")
-    pos_aplicacao["DATA"] = pd.to_datetime(pos_aplicacao["DATA"], format="%d/%m/%Y", errors="coerce")
-    pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
-    df_unico = pos_aplicacao.drop_duplicates(subset=["MÊS", "SETOR"])
+    pos_aplicacao_filtrada["MÊS"] = pos_aplicacao_filtrada["DATA"].dt.strftime('%B').str.capitalize()
+    df_unico = pos_aplicacao_filtrada.drop_duplicates(subset=["MÊS", "SETOR"])
     df_contagem = df_unico["MÊS"].value_counts().reset_index()
     df_contagem.columns = ["MÊS", "QUANTIDADE"]
     ordem_meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
