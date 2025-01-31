@@ -21,7 +21,7 @@ st.markdown("""
     <style>
         /* Remove todo o padding no topo da página */
         .block-container {
-            padding-top: 0 !important;
+            padding-top: 10 !important;
             margin-top: 0 !important;
         }
 
