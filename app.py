@@ -221,28 +221,28 @@ def update_sidebar(dashboard_number):
     elif dashboard_number == 2:
         st.sidebar.write("Opções específicas do Dashboard 2")
         # Slider para Data (se necessário para o Dashboard 2)
-        data_inicio, data_fim = st.sidebar.slider(
-            "Selecione o intervalo de datas",
-            min_value=min_value,
-            max_value=max_value,
-            value=(min_value, max_value),
-            format="YYYY-MM-DD",
-            key="date_slider_2"  # Chave única para o slider
-        )
+        # data_inicio, data_fim = st.sidebar.slider(
+        #     "Selecione o intervalo de datas",
+        #     min_value=min_value,
+        #     max_value=max_value,
+        #     value=(min_value, max_value),
+        #     format="YYYY-MM-DD",
+        #     key="date_slider_2"  # Chave única para o slider
+        # )
 
     ################################################# SIDEBAR - DASH AUDITORIA #################################################
 
     elif dashboard_number == 3:
         st.sidebar.write("Opções específicas do Dashboard 3")
         # Slider para Data (se necessário para o Dashboard 2)
-        data_inicio, data_fim = st.sidebar.slider(
-            "Selecione o intervalo de datas",
-            min_value=min_value,
-            max_value=max_value,
-            value=(min_value, max_value),
-            format="YYYY-MM-DD",
-            key="date_slider_3"  # Chave única para o slider
-        )
+        # data_inicio, data_fim = st.sidebar.slider(
+        #     "Selecione o intervalo de datas",
+        #     min_value=min_value,
+        #     max_value=max_value,
+        #     value=(min_value, max_value),
+        #     format="YYYY-MM-DD",
+        #     key="date_slider_3"  # Chave única para o slider
+        # )
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
