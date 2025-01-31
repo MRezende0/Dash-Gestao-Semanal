@@ -134,7 +134,7 @@ def update_sidebar(dashboard_number):
             max_value=max_value,
             value=(min_value, max_value),  # Valor inicial do slider
             format="DD/MM/YYYY",  # Formato de exibição das datas
-            key=f"date_slider_1_{dashboard_number}"  # Chave única para o slider
+            key="date_slider_1"  # Chave única para o slider
         )
 
         # Agora você pode usar `data_inicio` e `data_fim` para filtrar as tarefas
@@ -227,7 +227,7 @@ def update_sidebar(dashboard_number):
             max_value=max_value,
             value=(min_value, max_value),
             format="YYYY-MM-DD",
-            key=f"date_slider_2_{dashboard_number}"  # Chave única para o slider
+            key="date_slider_2"  # Chave única para o slider
         )
 
     ################################################# SIDEBAR - DASH AUDITORIA #################################################
@@ -241,7 +241,7 @@ def update_sidebar(dashboard_number):
             max_value=max_value,
             value=(min_value, max_value),
             format="YYYY-MM-DD",
-            key=f"date_slider_3_{dashboard_number}"  # Chave única para o slider
+            key="date_slider_3"  # Chave única para o slider
         )
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
