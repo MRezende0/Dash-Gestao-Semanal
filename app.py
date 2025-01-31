@@ -134,10 +134,10 @@ def update_sidebar(dashboard_number):
             max_value=max_value,
             value=(min_value, max_value),  # Valor inicial do slider
             format="DD/MM/YYYY",  # Formato de exibição das datas
-            key="date_slider_1"  # Chave única para o slider
+            key="slider_1_1"  # Chave única para o slider
         )
 
-        # Agora você pode usar `data_inicio` e `data_fim` para filtrar as tarefas
+        # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
         tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
         ################################ SETOR ################################
@@ -146,7 +146,7 @@ def update_sidebar(dashboard_number):
         st.sidebar.subheader("Setor")
         setor_selecionado = st.sidebar.text_input(
             "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
-            key=f"setor_input_{dashboard_number}"  # Chave única para o campo de texto
+            key="input_1_1"  # Chave única para o campo de texto
         )
 
         # Filtro de Setor
@@ -161,7 +161,7 @@ def update_sidebar(dashboard_number):
             "Selecione o Status:",
             options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
             index=0,
-            key="selectbox_1"  # Chave única para o selectbox
+            key="selectbox_1_1"  # Chave única para o selectbox
         )
 
         # Filtro de Status
@@ -176,7 +176,7 @@ def update_sidebar(dashboard_number):
             "Selecione a Pessoa:",
             options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
             index=0,
-            key="selectbox_2"  # Chave única para o selectbox
+            key="selectbox_1_2"  # Chave única para o selectbox
         )
 
         # Filtro de Pessoas
@@ -191,7 +191,7 @@ def update_sidebar(dashboard_number):
             "Selecione o Projeto:",
             options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
             index=0,
-            key="selectbox_3"  # Chave única para o selectbox
+            key="selectbox_1_3"  # Chave única para o selectbox
         )
 
         # Filtro de Projeto
@@ -206,7 +206,7 @@ def update_sidebar(dashboard_number):
             "Selecione a(s) Unidade(s):",
             options=tarefas_filtradas["Unidade"].unique().tolist(),
             default=tarefas_filtradas["Unidade"].unique().tolist(),
-            key=f"unidade_multiselect_{dashboard_number}"  # Chave única para o multiselect
+            key="multiselect_1_1"  # Chave única para o multiselect
         )
 
         # Filtro de Unidade
@@ -595,14 +595,12 @@ def dashboard_1():
 # Função para o Dashboard 2
 def dashboard_2():
     st.write("### Atividades Extras")
-    st.bar_chart(extras)
 
 ################################################# DASHBOARD - AUDITORIA #################################################
 
 # Função para o Dashboard 3
 def dashboard_3():
     st.write("### Auditoria")
-    st.area_chart(auditoria)
 
 ################################################# LAYOUT #################################################
 
