@@ -296,7 +296,7 @@ def dashboard_1():
     )
 
     # Exibir o gráfico
-    st.plotly_chart(fig_responsavel)
+    st.plotly_chart(fig_responsavel, key="fig_responsavel_1")
 
     # Adiciona uma linha horizontal e espaçamento
     st.divider()
