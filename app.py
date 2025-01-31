@@ -6,8 +6,6 @@ import plotly.express as px
 from datetime import datetime
 import subprocess
 import time
-import locale
-locale.setlocale(locale.LC_TIME, "Portuguese_Brazil")
 
 # Configuração inicial do estado da última atualização
 if "ultima_atualizacao" not in st.session_state:
