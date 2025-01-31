@@ -83,15 +83,15 @@ if st.button("Atualizar dados"):
 
 ################################################# SIDEBAR - FILTROS #################################################
 
-def aplicar_filtros(tarefas, pos_aplicacao):
+def aplicar_filtros(tarefas):
     st.sidebar.markdown("### Última Atualização")
     st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
 
     st.sidebar.title("Filtros")
 
     # Filtro de datas
-    min_data = min(tarefas["Data"].min(), pos_aplicacao["DATA"].min()).to_pydatetime()
-    max_data = max(tarefas["Data"].max(), pos_aplicacao["DATA"].max()).to_pydatetime()
+    min_data = tarefas["Data"].min().to_pydatetime()
+    max_data = tarefas["Data"].max().to_pydatetime()
     data_inicio, data_fim = st.sidebar.slider(
         "Selecione o intervalo de datas",
         min_value=min_data,
@@ -104,9 +104,6 @@ def aplicar_filtros(tarefas, pos_aplicacao):
     # Aplicar filtro de datas ao dataset de tarefas
     tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
-    # Aplicar filtro de datas ao dataset de pós-aplicação
-    pos_aplicacao_filtrada = pos_aplicacao[(pos_aplicacao['DATA'] >= data_inicio) & (pos_aplicacao['DATA'] <= data_fim)]
-
     # Filtro de Setor
     setor_selecionado = st.sidebar.text_input(
         "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
@@ -114,7 +111,6 @@ def aplicar_filtros(tarefas, pos_aplicacao):
     )
     if setor_selecionado:
         tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
-        pos_aplicacao_filtrada = pos_aplicacao_filtrada[pos_aplicacao_filtrada["SETOR"].astype(str).str.contains(setor_selecionado)]
 
     # Filtro de Status
     status_selecionado = st.sidebar.selectbox(
@@ -155,9 +151,30 @@ def aplicar_filtros(tarefas, pos_aplicacao):
     )
     if unidades_selecionadas:
         tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidades_selecionadas)]
-        pos_aplicacao_filtrada = pos_aplicacao_filtrada[pos_aplicacao_filtrada["UNIDADE"].isin(unidades_selecionadas)]
 
-    return tarefas_filtradas, pos_aplicacao_filtrada
+    return tarefas_filtradas
+
+################################################# FILTRO DE MÊS PARA PÓS-APLICAÇÃO #################################################
+
+def filtrar_pos_aplicacao(pos_aplicacao):
+    st.sidebar.title("Filtros para Mapas de Pós-Aplicação")
+
+    # Extrair os meses disponíveis no dataset
+    pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
+    meses_disponiveis = pos_aplicacao["MÊS"].unique().tolist()
+
+    # Filtro de mês
+    mes_selecionado = st.sidebar.selectbox(
+        "Selecione o Mês:",
+        options=meses_disponiveis,
+        index=0,
+        key="selectbox_mes"
+    )
+
+    # Aplicar filtro de mês ao dataset de pós-aplicação
+    pos_aplicacao_filtrada = pos_aplicacao[pos_aplicacao["MÊS"] == mes_selecionado]
+
+    return pos_aplicacao_filtrada
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
@@ -176,8 +193,8 @@ def dashboard_1():
 
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
 
-    # Aplica os filtros e obtém os DataFrames filtrados
-    tarefas_filtradas, pos_aplicacao_filtrada = aplicar_filtros(tarefas, pos_aplicacao)
+    # Aplica os filtros e obtém o DataFrame filtrado
+    tarefas_filtradas = aplicar_filtros(tarefas)
 
     # Exibe métricas
     col1, col2, col3 = st.columns(3)
@@ -250,7 +267,7 @@ def dashboard_1():
 
     # Gráfico de Pós-Aplicação
     st.subheader("Mapas de Pós-Aplicação")
-    pos_aplicacao_filtrada["MÊS"] = pos_aplicacao_filtrada["DATA"].dt.strftime('%B').str.capitalize()
+    pos_aplicacao_filtrada = filtrar_pos_aplicacao(pos_aplicacao)
     df_unico = pos_aplicacao_filtrada.drop_duplicates(subset=["MÊS", "SETOR"])
     df_contagem = df_unico["MÊS"].value_counts().reset_index()
     df_contagem.columns = ["MÊS", "QUANTIDADE"]
