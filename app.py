@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import plotly.express as px
 from datetime import datetime
 import subprocess
@@ -18,9 +17,6 @@ def atualizar_data_hora():
 ################################################# CONFIGURAÇÃO DA PÁGINA #################################################
 
 st.set_page_config(layout="wide")
-
-col1, col2 = st.columns(2)
-col3, col4, col5 = st.columns(3)
 
 st.markdown("""
     <style>
@@ -43,289 +39,155 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-################################################# DADOS #################################################
+################################################# CARREGAMENTO DOS DADOS #################################################
 
-tarefas = pd.read_csv("dados/tarefas.csv")
-extras = pd.read_excel("dados/atividades_extras.xlsx")
-auditoria = pd.read_excel("dados/auditoria.xlsx")
-base = pd.read_csv("dados/base.csv")
-pos_aplicacao = pd.read_excel("dados/pos_aplicacao.xlsx")
+@st.cache_data  # Cache para evitar recarregar os dados a cada interação
+def carregar_dados():
+    tarefas = pd.read_csv("dados/tarefas.csv")
+    extras = pd.read_excel("dados/atividades_extras.xlsx")
+    auditoria = pd.read_excel("dados/auditoria.xlsx")
+    base = pd.read_csv("dados/base.csv")
+    pos_aplicacao = pd.read_excel("dados/pos_aplicacao.xlsx")
 
-tarefas = tarefas.sort_values("Data", ascending=False)
+    # Garantir que a coluna 'Data' esteja no formato datetime
+    tarefas['Data'] = pd.to_datetime(tarefas['Data'], dayfirst=True, errors='coerce')
+    tarefas["Setor"] = tarefas["Setor"].astype(int)
+    tarefas["Status"] = tarefas["Status"].astype(str)
+    tarefas["Colaborador"] = tarefas["Colaborador"].astype(str)
+    tarefas["Tipo"] = tarefas["Tipo"].astype(str)
 
-# Garantir que a coluna 'Data' esteja no formato datetime
-tarefas['Data'] = pd.to_datetime(tarefas['Data'], dayfirst=True, errors='coerce')
-tarefas["Setor"] = tarefas["Setor"].astype(int)
-tarefas["Status"] = tarefas["Status"].astype(str)
-tarefas["Colaborador"] = tarefas["Colaborador"].astype(str)
-tarefas["Tipo"] = tarefas["Tipo"].astype(str)
+    # Realizar a junção entre df_filtrado e base, trazendo as colunas 'unidade' e 'area' do 'base'
+    tarefas = pd.merge(tarefas, base[['Setor', 'Unidade', 'Area']], on='Setor', how='left')
+    tarefas["Unidade"] = tarefas["Unidade"].astype(str)
 
-################################ MERGE COM UNIDADE E AREA ################################
+    return tarefas, extras, auditoria, pos_aplicacao
 
-# Realizar a junção entre df_filtrado e base, trazendo as colunas 'unidade' e 'area' do 'base'
-tarefas = pd.merge(tarefas, base[['Setor', 'Unidade', 'Area']], on='Setor', how='left')
-tarefas["Unidade"] = tarefas["Unidade"].astype(str)
+tarefas, extras, auditoria, pos_aplicacao = carregar_dados()
 
 ################################################# BOTÃO ATUALIZAR #################################################
 
-# Botão para rodar os scripts
 if st.button("Atualizar dados"):
-
     atualizar_data_hora()
-
     try:
-        # Mensagem temporária para "Autenticando token..."
-        auth_message = st.empty()
-        auth_message.write("Autenticando token...")
-        
-        # Executa o script de autenticação
-        subprocess.run(["python", "scripts/auth.py"], check=True)
-        
-        # Mensagem temporária para "Coletando dados..."
-        coleta_message = st.empty()
-        coleta_message.write("Coletando dados...")
-        
-        # Executa o script de coleta de dados
-        subprocess.run(["python", "scripts/coleta.py"], check=True)
-        
-        # Mensagem temporária para "Atualizando gráficos..."
-        grafico_message = st.empty()
-        grafico_message.write("Atualizando gráficos...")
-        
-        # Mensagem de sucesso temporária
-        success_message = st.empty()
-        success_message.success("Dados atualizados com sucesso!")
-        
-        # Limpa todas as mensagens após a conclusão do processo
-        time.sleep(2)  # Espera 5 segundos para visualizar o sucesso
-        auth_message.empty()
-        coleta_message.empty()
-        grafico_message.empty()
-        success_message.empty()  # Limpa também a mensagem de sucesso
-        
+        with st.spinner("Autenticando token..."):
+            subprocess.run(["python", "scripts/auth.py"], check=True)
+        with st.spinner("Coletando dados..."):
+            subprocess.run(["python", "scripts/coleta.py"], check=True)
+        st.success("Dados atualizados com sucesso!")
+        time.sleep(2)
+        st.experimental_rerun()  # Recarrega a página para atualizar os dados
     except subprocess.CalledProcessError as e:
         st.error(f"Erro ao executar um dos scripts: {e}")
 
-################################################# SIDEBAR - DASH ATIVIDADES #################################################
+################################################# SIDEBAR - FILTROS #################################################
 
-def update_sidebar(dashboard_number):
-    if dashboard_number == 1:
-        st.sidebar.markdown("### Última Atualização")
+def aplicar_filtros(tarefas):
+    st.sidebar.markdown("### Última Atualização")
+    st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
 
-        # Exibir a última data e hora de atualização na sidebar
-        if 'ultima_atualizacao' in st.session_state:
-            st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
-        else:
-            st.sidebar.write("Não disponível")
+    st.sidebar.title("Filtros")
 
-        # Adicionar barra lateral
-        st.sidebar.title("Filtros")
+    # Filtro de datas
+    min_data = tarefas["Data"].min().to_pydatetime()
+    max_data = tarefas["Data"].max().to_pydatetime()
+    data_inicio, data_fim = st.sidebar.slider(
+        "Selecione o intervalo de datas",
+        min_value=min_data,
+        max_value=max_data,
+        value=(min_data, max_data),
+        format="DD/MM/YYYY",
+        key="slider_data"
+    )
+    tarefas_filtradas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
 
-        ################################ DATA ################################
+    # Filtro de Setor
+    setor_selecionado = st.sidebar.text_input(
+        "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
+        key="input_setor"
+    )
+    if setor_selecionado:
+        tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
 
-        # Converter min_value e max_value para datetime.datetime
-        min_value = tarefas["Data"].min().to_pydatetime()  # Converte para datetime.datetime
-        max_value = tarefas["Data"].max().to_pydatetime()  # Converte para datetime.datetime
+    # Filtro de Status
+    status_selecionado = st.sidebar.selectbox(
+        "Selecione o Status:",
+        options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
+        index=0,
+        key="selectbox_status"
+    )
+    if status_selecionado != "Todos":
+        tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Status"] == status_selecionado]
 
-        # Aplicando o slider com os valores convertidos
-        data_inicio, data_fim = st.sidebar.slider(
-            "Selecione o intervalo de datas",
-            min_value=min_value,
-            max_value=max_value,
-            value=(min_value, max_value),  # Valor inicial do slider
-            format="DD/MM/YYYY",  # Formato de exibição das datas
-            key="slider_1_1"  # Chave única para o slider
-        )
+    # Filtro de Colaborador
+    colaborador_selecionado = st.sidebar.selectbox(
+        "Selecione o Colaborador:",
+        options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
+        index=0,
+        key="selectbox_colaborador"
+    )
+    if colaborador_selecionado != "Todos":
+        tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Colaborador"] == colaborador_selecionado]
 
-        # Agora você pode usar data_inicio e data_fim para filtrar as tarefas
-        tarefas = tarefas[(tarefas['Data'] >= data_inicio) & (tarefas['Data'] <= data_fim)]
+    # Filtro de Tipo de Projeto
+    tipo_selecionado = st.sidebar.selectbox(
+        "Selecione o Tipo de Projeto:",
+        options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
+        index=0,
+        key="selectbox_tipo"
+    )
+    if tipo_selecionado != "Todos":
+        tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Tipo"] == tipo_selecionado]
 
-        # ################################ SETOR ################################
+    # Filtro de Unidade
+    unidades_selecionadas = st.sidebar.multiselect(
+        "Selecione a(s) Unidade(s):",
+        options=tarefas_filtradas["Unidade"].unique().tolist(),
+        default=tarefas_filtradas["Unidade"].unique().tolist(),
+        key="multiselect_unidade"
+    )
+    if unidades_selecionadas:
+        tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidades_selecionadas)]
 
-        # # Seção de Filtro por Setor (campo para digitar o número do setor)
-        # st.sidebar.subheader("Setor")
-        # setor_selecionado = st.sidebar.text_input(
-        #     "Digite o número do Setor:", value="", max_chars=5, placeholder="Setor:",
-        #     key="input_1_1"  # Chave única para o campo de texto
-        # )
-
-        # # Filtro de Setor
-        # if setor_selecionado:
-        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Setor"].astype(str).str.contains(setor_selecionado)]
-
-        # ################################ STATUS ################################
-
-        # # Seção de Filtro de Status (drop box para selecionar o status)
-        # st.sidebar.subheader("Status")
-        # status_selecionado = st.sidebar.selectbox(
-        #     "Selecione o Status:",
-        #     options=["Todos"] + tarefas_filtradas["Status"].unique().tolist(),
-        #     index=0,
-        #     key="selectbox_1_1"  # Chave única para o selectbox
-        # )
-
-        # # Filtro de Status
-        # if status_selecionado != "Todos":
-        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Status"] == status_selecionado]
-
-        # ################################ COLABORADOR ################################
-
-        # # Seção de Filtro por Pessoas (drop box para selecionar a pessoa)
-        # st.sidebar.subheader("Colaborador")
-        # pessoa_selecionada = st.sidebar.selectbox(
-        #     "Selecione a Pessoa:",
-        #     options=["Todos"] + tarefas_filtradas["Colaborador"].unique().tolist(),
-        #     index=0,
-        #     key="selectbox_1_2"  # Chave única para o selectbox
-        # )
-
-        # # Filtro de Pessoas
-        # if pessoa_selecionada != "Todos":
-        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Colaborador"] == pessoa_selecionada]
-
-        # ################################ TIPO DE PROJETO ################################
-
-        # # Seção de Filtro por Projeto (drop box para selecionar o tipo de projeto)
-        # st.sidebar.subheader("Tipo")
-        # projeto_selecionado = st.sidebar.selectbox(
-        #     "Selecione o Projeto:",
-        #     options=["Todos"] + tarefas_filtradas["Tipo"].unique().tolist(),
-        #     index=0,
-        #     key="selectbox_1_3"  # Chave única para o selectbox
-        # )
-
-        # # Filtro de Projeto
-        # if projeto_selecionado != "Todos":
-        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Tipo"] == projeto_selecionado]
-
-        # ################################ UNIDADE ################################
-
-        # # Seção de Filtro de Unidade (botões para selecionar unidade)
-        # st.sidebar.subheader("Unidade")
-        # unidade_selecionada = st.sidebar.multiselect(
-        #     "Selecione a(s) Unidade(s):",
-        #     options=tarefas_filtradas["Unidade"].unique().tolist(),
-        #     default=tarefas_filtradas["Unidade"].unique().tolist(),
-        #     key="multiselect_1_1"  # Chave única para o multiselect
-        # )
-
-        # # Filtro de Unidade
-        # if unidade_selecionada:
-        #     tarefas_filtradas = tarefas_filtradas[tarefas_filtradas["Unidade"].isin(unidade_selecionada)]
-
-        # Retorna o DataFrame filtrado
-        # return tarefas_filtradas
-
-    ################################################# SIDEBAR - DASH EXTRAS #################################################
-
-    elif dashboard_number == 2:
-        st.sidebar.write("Opções específicas do Dashboard 2")
-
-    ################################################# SIDEBAR - DASH AUDITORIA #################################################
-
-    elif dashboard_number == 3:
-        st.sidebar.write("Opções específicas do Dashboard 3")
+    return tarefas_filtradas
 
 ################################################# DASHBOARD - ATIVIDADES #################################################
 
-# Função para o Dashboard 1
 def dashboard_1():
     st.markdown(
         """
         <style>
         .title {
             text-align: center;
-            color: #000;  /* Cor do texto do título (opcional) */
-            font-size: 48px;  /* Tamanho do texto (opcional) */
-            font-weight: bold;  /* Deixar o título em negrito (opcional) */
+            color: #000;
+            font-size: 48px;
+            font-weight: bold;
         }
         </style>
         """, unsafe_allow_html=True)
 
-    # Título centralizado
     st.markdown('<div class="title">Gestão Semanal - Geotecnologia</div>', unsafe_allow_html=True)
 
-    # tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros na sidebar
-    # tarefas_filtradas = tarefas.copy()
-    tarefas_filtradas = update_sidebar(dashboard_number=1)  # Aplica os filtros da sidebar
+    # Aplica os filtros e obtém o DataFrame filtrado
+    tarefas_filtradas = aplicar_filtros(tarefas)
 
-################################################# CABEÇALHO #################################################
-
-    # Seções com informações
-    st.markdown(
-        """
-        <style>
-        .info-box {
-            background-color: rgba(118, 184, 42, 0.5);
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin: 5px;
-            color: #000
-        }
-        .info-container {
-            background-color: #000;
-            padding: 20px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-around;
-            gap: 10px;
-        }
-        .info-container .column {
-            flex: 1;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
-    # Layout em colunas
+    # Exibe métricas
     col1, col2, col3 = st.columns(3)
-
     with col1:
         total_area = tarefas_filtradas['Area'].sum()
         formatted_area = f"{total_area:,.0f}".replace(',', '.')
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Área Total</strong></h8>
-                <h3>{formatted_area} ha</h3>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Área Total", f"{formatted_area} ha")
     with col2:
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Quantidade de Atividades</strong></h8>
-                <h3>{tarefas_filtradas['Colaborador'].size}</h3>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Quantidade de Atividades", tarefas_filtradas['Colaborador'].size)
     with col3:
-        st.markdown(f"""
-            <div class="info-box">
-                <h8><strong>Colaboradores</strong></h8>
-                <h3>{tarefas_filtradas['Colaborador'].unique().size}</h3>
-            </div>
-        """, unsafe_allow_html=True)
+        st.metric("Colaboradores", tarefas_filtradas['Colaborador'].unique().size)
 
-    # Adiciona uma linha horizontal e espaçamento
     st.divider()
 
-################################################# GRÁFICO - COLABORADORES #################################################
-
-        # Gráfico de Atividades por Colaborador
-    df_contagem_responsavel = (
-        tarefas_filtradas.groupby("Colaborador")["Tipo"].count().reset_index()
-    )
-    df_contagem_responsavel.columns = ["Colaborador", "Quantidade de Projetos"]
-
-    # Ordenar o DataFrame do maior para o menor número de projetos
-    df_contagem_responsavel = df_contagem_responsavel.sort_values(
-        by="Quantidade de Projetos", ascending=False
-    )
-
-    # Criar o gráfico
+    # Gráfico de Atividades por Colaborador
     st.subheader("Atividades por Colaborador")
+    df_contagem_responsavel = tarefas_filtradas.groupby("Colaborador")["Tipo"].count().reset_index()
+    df_contagem_responsavel.columns = ["Colaborador", "Quantidade de Projetos"]
+    df_contagem_responsavel = df_contagem_responsavel.sort_values(by="Quantidade de Projetos", ascending=False)
     fig_responsavel = px.bar(
         df_contagem_responsavel,
         x="Quantidade de Projetos",
@@ -334,50 +196,17 @@ def dashboard_1():
         orientation="h",
         text="Quantidade de Projetos",
     )
+    fig_responsavel.update_traces(texttemplate="%{text}", textposition="outside")
+    fig_responsavel.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
+    st.plotly_chart(fig_responsavel)
 
-    # Configurar o texto corretamente no gráfico
-    fig_responsavel.update_traces(
-        texttemplate="%{text}",  # Exibir o texto diretamente dos valores configurados
-        textposition="outside"  # Posicionar o texto fora das barras
-    )
-
-    # Remover a legenda
-    fig_responsavel.update_layout(showlegend=False)
-
-    fig_responsavel.update_layout(margin=dict(l=10, r=10, t=10, b=10))  # Margens mais compactas
-
-    # Remover as linhas de contagem (ticks) no eixo X
-    fig_responsavel.update_layout(
-        xaxis=dict(
-            showticklabels=False,  # Remove os ticks do eixo X
-            title=""  # Remove o nome do eixo X
-        ),
-        yaxis=dict(
-            title=""  # Remove o nome do eixo Y
-        )
-    )
-
-    # Exibir o gráfico
-    st.plotly_chart(fig_responsavel, key="fig_responsavel_1")
-
-    # Adiciona uma linha horizontal e espaçamento
     st.divider()
 
-################################################# GRÁFICO - TIPO DE PROJETO #################################################
-
-    # Calcular a quantidade de projetos por tipo no DataFrame filtrado
-    df_contagem_tipo = (
-        tarefas_filtradas.groupby("Tipo")["Colaborador"].count().reset_index()
-    )
+    # Gráfico de Quantidade de Projetos por Tipo
+    st.subheader("Quantidade de Projetos por Tipo")
+    df_contagem_tipo = tarefas_filtradas.groupby("Tipo")["Colaborador"].count().reset_index()
     df_contagem_tipo.columns = ["Tipo", "Quantidade de Projetos"]
-
-    # Ordenar o DataFrame do maior para o menor número de projetos
-    df_contagem_tipo = df_contagem_tipo.sort_values(
-        by="Quantidade de Projetos", ascending=False
-    )
-
-    # Criar o gráfico
-    st.subheader("Quantidade de Projetos")
+    df_contagem_tipo = df_contagem_tipo.sort_values(by="Quantidade de Projetos", ascending=False)
     fig_tipo = px.bar(
         df_contagem_tipo,
         x="Tipo",
@@ -385,108 +214,39 @@ def dashboard_1():
         color="Tipo",
         text="Quantidade de Projetos",
     )
-
-    # Configurar o texto corretamente no gráfico
-    fig_tipo.update_traces(
-        texttemplate="%{text}",
-        textposition="outside"
-    )
-
-    # Remover a legenda
-    fig_tipo.update_layout(showlegend=False)
-
-    fig_tipo.update_layout(margin=dict(l=10, r=10, t=10, b=10))  # Margens mais compactas
-
-    # Remover as linhas de contagem (ticks) no eixo Y
-    fig_tipo.update_layout(
-        yaxis=dict(showticklabels=False, showline=False, showgrid=False),  # Remove ticks, linha do eixo Y e gridlines
-        xaxis=dict(showgrid=False),  # Remove gridlines no eixo X
-        xaxis_title="",  # Remove o nome do eixo X
-        yaxis_title=""   # Remove o nome do eixo Y
-    )
-
-    # Exibir o gráfico
+    fig_tipo.update_traces(texttemplate="%{text}", textposition="outside")
+    fig_tipo.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig_tipo)
 
-    # Adiciona uma linha horizontal e espaçamento
     st.divider()
 
-################################################# GRÁFICO - STATUS #################################################
-
-    # Calcular a quantidade de projetos por status
-    df_contagem_status = (
-        tarefas_filtradas.groupby("Status")["Tipo"].count().reset_index()
-    )
-    df_contagem_status.columns = ["Status", "Quantidade de Projetos"]
-
-    # Ordenar o DataFrame do maior para o menor número de projetos
-    df_contagem_status = df_contagem_status.sort_values(
-        by="Quantidade de Projetos", ascending=False
-    )
-
-    # Criar o gráfico
+    # Gráfico de Status dos Projetos
     st.subheader("Status dos Projetos")
+    df_contagem_status = tarefas_filtradas.groupby("Status")["Tipo"].count().reset_index()
+    df_contagem_status.columns = ["Status", "Quantidade de Projetos"]
+    df_contagem_status = df_contagem_status.sort_values(by="Quantidade de Projetos", ascending=False)
     fig_status = px.bar(
         df_contagem_status,
         x="Quantidade de Projetos",
         y="Status",
         color="Status",
         orientation="h",
-        text="Quantidade de Projetos",  # Vincular diretamente o texto ao valor correto
+        text="Quantidade de Projetos",
     )
-
-    # Configurar o texto corretamente no gráfico
-    fig_status.update_traces(
-        texttemplate="%{text}",  # Exibir o texto diretamente dos valores configurados
-        textposition="outside"  # Posicionar o texto fora das barras
-    )
-
-    # Remover a legenda
-    fig_status.update_layout(showlegend=False)
-
-    fig_status.update_layout(margin=dict(l=10, r=10, t=10, b=10))  # Margens mais compactas
-
-    # Configurar o layout para remover os nomes dos eixos
-    fig_status.update_layout(
-        xaxis=dict(
-            showticklabels=False,  # Remove os ticks do eixo X
-            title=""  # Remove o nome do eixo X
-        ),
-        yaxis=dict(
-            title=""  # Remove o nome do eixo Y
-        )
-    )
-
-    # Exibir o gráfico
+    fig_status.update_traces(texttemplate="%{text}", textposition="outside")
+    fig_status.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig_status)
 
-    # Adiciona uma linha horizontal e espaçamento
     st.divider()
 
-################################################# GRÁFICO - PÓS APLIC #################################################
-
-    # Certifique-se de que a coluna 'DATA' esteja no formato datetime
+    # Gráfico de Pós-Aplicação
+    st.subheader("Mapas de Pós-Aplicação")
     pos_aplicacao["DATA"] = pd.to_datetime(pos_aplicacao["DATA"], format="%d/%m/%Y", errors="coerce")
-
-    # Criar um mapeamento de meses para ordenação
-    ordem_meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril",
-        "Maio", "Junho", "Julho", "Agosto",
-        "Setembro", "Outubro", "Novembro", "Dezembro"
-    ]
-
-    # Criar a coluna 'MÊS' corretamente formatada em português
     pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
-
-    # Remover duplicatas para considerar apenas setores distintos
     df_unico = pos_aplicacao.drop_duplicates(subset=["MÊS", "SETOR"])
-
-    # Contar quantas vezes cada mês aparece
     df_contagem = df_unico["MÊS"].value_counts().reset_index()
     df_contagem.columns = ["MÊS", "QUANTIDADE"]
-
-    # Criar o gráfico com a ordem correta dos meses
-    st.subheader("Mapas de Pós-Aplicação")
+    ordem_meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
     fig_mes = px.bar(
         df_contagem,
         x="QUANTIDADE",
@@ -494,94 +254,40 @@ def dashboard_1():
         color="MÊS",
         orientation="h",
         text="QUANTIDADE",
-        category_orders={"MÊS": ordem_meses}  # Definir ordem cronológica manualmente
+        category_orders={"MÊS": ordem_meses}
     )
-
-    # Configurar o texto corretamente no gráfico
-    fig_mes.update_traces(
-        texttemplate="%{text}",
-        textposition="outside"
-    )
-
-    # Ajustar layout
-    fig_mes.update_layout(
-        showlegend=False,
-        margin=dict(l=10, r=10, t=10, b=10)
-    )
-
-    fig_mes.update_layout(
-        xaxis_title=None,  # Remove o título do eixo X
-        yaxis_title=None   # Remove o título do eixo Y
-    )
-
-    # Exibir o gráfico
+    fig_mes.update_traces(texttemplate="%{text}", textposition="outside")
+    fig_mes.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig_mes)
 
     st.divider()
 
-################################################# GRÁFICO - UNIDADE #################################################
-
-    # Calcular a quantidade de projetos por unidade
+    # Gráfico de Projetos por Unidade
+    st.subheader("Projetos por Unidade")
     df_contagem_unidade = tarefas_filtradas.groupby("Unidade")["Tipo"].count().reset_index()
     df_contagem_unidade.columns = ["Unidade", "Quantidade de Projetos"]
-
-    # Criar o gráfico de pizza
-    st.subheader("Projetos por Unidade")
     fig_pizza = px.pie(
         df_contagem_unidade,
         names="Unidade",
         values="Quantidade de Projetos",
-        color="Unidade",  # Opcional: adicionar cores para cada unidade
-        hole=0.3,  # Opcional: criar um gráfico de pizza com um buraco no meio (donut)
+        color="Unidade",
+        hole=0.3,
         labels={'Quantidade de Projetos': 'Porcentagem de Projetos'}
     )
-
-    # Exibir o gráfico
     st.plotly_chart(fig_pizza)
 
-################################################# DASHBOARD - EXTRAS #################################################
+################################################# LAYOUT PRINCIPAL #################################################
 
-# Função para o Dashboard 2
-def dashboard_2():
-    st.write("### Atividades Extras")
-
-################################################# DASHBOARD - AUDITORIA #################################################
-
-# Função para o Dashboard 3
-def dashboard_3():
-    st.write("### Auditoria")
-
-################################################# LAYOUT #################################################
-
-# Layout da página
 def main():
+    st.sidebar.title("Navegação")
+    opcao = st.sidebar.radio("Selecione o Dashboard", ["Atividades Semanais", "Atividades Extras", "Auditoria"])
 
-    # Botões na parte superior para selecionar o dashboard
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("Atividades Semanais"):
-            st.session_state['dashboard'] = 1
-    with col2:
-        if st.button("Atividades Extras"):
-            st.session_state['dashboard'] = 2
-    with col3:
-        if st.button("Auditoria"):
-            st.session_state['dashboard'] = 3
-
-    # Inicializa o estado da sessão se não existir
-    if 'dashboard' not in st.session_state:
-        st.session_state['dashboard'] = 1
-
-    # Atualiza o sidebar com base no dashboard selecionado
-    update_sidebar(st.session_state['dashboard'])
-
-    # Exibe o dashboard selecionado
-    if st.session_state['dashboard'] == 1:
+    if opcao == "Atividades Semanais":
         dashboard_1()
-    elif st.session_state['dashboard'] == 2:
-        dashboard_2()
-    elif st.session_state['dashboard'] == 3:
-        dashboard_3()
+    elif opcao == "Atividades Extras":
+        st.write("### Atividades Extras")
+    elif opcao == "Auditoria":
+        st.write("### Auditoria")
 
 if __name__ == "__main__":
     main()
