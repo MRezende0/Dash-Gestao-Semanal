@@ -69,11 +69,6 @@ tarefas, extras, auditoria, pos_aplicacao = carregar_dados()
 ################################################# SIDEBAR - FILTROS #################################################
 
 def aplicar_filtros(tarefas):
-    st.sidebar.markdown("### Última Atualização")
-    st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
-
-    st.sidebar.title("Filtros")
-
     # Botão para atualizar os dados
     if st.sidebar.button("Atualizar dados"):
         atualizar_data_hora()
@@ -87,6 +82,11 @@ def aplicar_filtros(tarefas):
             st.experimental_rerun()  # Recarrega a página para atualizar os dados
         except subprocess.CalledProcessError as e:
             st.error(f"Erro ao executar um dos scripts: {e}")
+            
+    st.sidebar.markdown("### Última Atualização")
+    st.sidebar.write(f"Atualizado em: {st.session_state['ultima_atualizacao']}")
+
+    st.sidebar.title("Filtros")
 
     # Filtro de datas
     min_data = tarefas["Data"].min().to_pydatetime()
@@ -156,7 +156,7 @@ def aplicar_filtros(tarefas):
 ################################################# FILTRO DE MÊS PARA PÓS-APLICAÇÃO #################################################
 
 def filtrar_pos_aplicacao(pos_aplicacao):
-    st.sidebar.title("Filtros para Mapas de Pós-Aplicação")
+    st.sidebar.markdown("### Mapa de Pós-Aplicação")
 
     # Extrair os meses disponíveis no dataset
     pos_aplicacao["MÊS"] = pos_aplicacao["DATA"].dt.strftime('%B').str.capitalize()
@@ -182,7 +182,6 @@ def dashboard_1():
         """
         <style>
         .title {
-            text-align: center;
             color: #000;
             font-size: 48px;
             font-weight: bold;
